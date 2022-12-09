@@ -7,6 +7,8 @@ Mobile app for milling machine process
 - After installing visual studio code select "Clone Git Repository.." on the first screen.
 <img width="1680" alt="Screen Shot 2022-12-09 at 11 12 08" src="https://user-images.githubusercontent.com/94080241/206655742-c7ea9f40-eb50-44dd-9e6f-25ad9f244c7e.png">
 
+Note: If there is no "Clone Git repository" press ctrl(cmd for mac) + shift + p and type "enable all extensions" and press enter.
+
 - On the top section select clone from GitHub and if you're not logged into GitHub, login.
 
 - Select Mobile-App-for-Industry-V4.0-of-machining-processes or type https://github.com/emirkantul/Mobile-App-for-Industry-V4.0-of-machining-processes
