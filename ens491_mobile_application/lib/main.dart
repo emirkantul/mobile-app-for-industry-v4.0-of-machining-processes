@@ -2,15 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import './data.dart';
 
-List<FlSpot>getDataAsSpots() {
+List<FlSpot>getDataAsSpots(String dataType, String source) {
   List<FlSpot> result = [];
+
+  var dataSource;
+
+  if(source == '1') {
+    dataSource = data;
+  }
+  else if(source == '2') {
+    dataSource = data2;
+  }
+  else {
+    dataSource = data3;
+  }
   for (var i = 0; i < data.length; i++) {
-    var x = data[i]["time"];
-    var y = data[i]["vibration"];
+    var x = dataSource[i]["time"];
+    var y = dataSource[i][dataType];
     result.add(FlSpot(x!, y!));
   }
   return result;
 }
+
+const List<String> list = <String>['1', '2', '3'];
+const List<String> dataTypes = <String>["vibration", "sound"];
 
 void main() {
   runApp(const MyApp());
@@ -68,9 +83,12 @@ class _LineChartSample2State extends State<MyHomePage> {
   ];
 
   bool showAvg = false;
+  String dataSource = list.first;
+  String DataValueType = dataTypes.first;
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
         appBar: AppBar(
          // Here we take the value from the MyHomePage object that was created by
@@ -121,6 +139,54 @@ class _LineChartSample2State extends State<MyHomePage> {
                   ),
                 ),
               ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  DropdownButton<String>(
+                    value: dataSource,
+                    icon: const Icon(Icons.arrow_downward),
+                    elevation: 16,
+                    underline: Container(
+                      height: 2,
+                      color: Colors.blueAccent,
+                    ),
+                    onChanged: (String? value) {
+                      // This is called when the user selects an item.
+                      setState(() {
+                        dataSource = value!;
+                      });
+                    },
+                    items: list.map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  ),
+                  Padding(padding: EdgeInsets.fromLTRB(16.0,0,16.0,0)),
+                  DropdownButton<String>(
+                    value: DataValueType,
+                    icon: const Icon(Icons.arrow_downward),
+                    elevation: 16,
+                    underline: Container(
+                      height: 2,
+                      color: Colors.blueAccent,
+                    ),
+                    onChanged: (String? value) {
+                      // This is called when the user selects an item.
+                      setState(() {
+                        DataValueType = value!;
+                      });
+                    },
+                    items: dataTypes.map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              )
             ],
           ),
 
@@ -247,7 +313,7 @@ class _LineChartSample2State extends State<MyHomePage> {
       maxY: 100,
       lineBarsData: [
         LineChartBarData(
-          spots: getDataAsSpots(),
+          spots: getDataAsSpots(DataValueType, dataSource),
           isCurved: true,
           gradient: LinearGradient(
             colors: gradientColors,
