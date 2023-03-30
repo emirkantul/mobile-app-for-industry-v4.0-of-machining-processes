@@ -1,435 +1,182 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
-import './data.dart';
+import 'dart:async' show Future;
+import 'package:flutter/services.dart' show rootBundle;
 
-List<FlSpot>getDataAsSpots(String dataType, String source) {
-  List<FlSpot> result = [];
+void main() => runApp(App());
 
-  var dataSource;
-
-  if(source == '1') {
-    dataSource = data;
-  }
-  else if(source == '2') {
-    dataSource = data2;
-  }
-  else {
-    dataSource = data3;
-  }
-  for (var i = 0; i < data.length; i++) {
-    var x = dataSource[i]["time"];
-    var y = dataSource[i][dataType];
-    result.add(FlSpot(x!, y!));
-  }
-  return result;
-}
-
-const List<String> list = <String>['1', '2', '3'];
-const List<String> dataTypes = <String>["vibration", "sound"];
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-
-
-  // This widget is the root of your application.
+class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Flutter Bottom Nav Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
+        primarySwatch: MaterialColor(
+          0xFF2F495E,
+          <int, Color>{
+            50: Color(0xFFE3F2FD),
+            100: Color(0xFFBBDEFB),
+            200: Color(0xFF90CAF9),
+            300: Color(0xFF64B5F6),
+            400: Color(0xFF42A5F5),
+            500: Color(0xFF2196F3),
+            600: Color(0xFF1E88E5),
+            700: Color(0xFF1976D2),
+            800: Color(0xFF1565C0),
+            900: Color(0xFF0D47A1),
+          },
+        ),
       ),
-      home: const MyHomePage(title: 'Milling Mobile Application'),
+      home: HomePage(title: 'Past Sessions'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
+class HomePage extends StatefulWidget {
+  HomePage({Key? key, required this.title}) : super(key: key);
 
   final String title;
 
   @override
-  State<MyHomePage> createState() => _LineChartSample2State();
+  _HomePageState createState() => _HomePageState();
 }
 
-class _LineChartSample2State extends State<MyHomePage> {
-  List<Color> gradientColors = [
-    const Color(0xff23b6e6),
-    const Color(0xff02d39a),
+class _HomePageState extends State<HomePage> {
+  int _selectedIndex = 0;
+
+  static const List<String> _appBarTitles = <String>[
+    'Past Sessions',
+    'Last Session',
   ];
 
-  bool showAvg = false;
-  String dataSource = list.first;
-  String DataValueType = dataTypes.first;
+  Map<String, Map<String, double>> _dataList = {};
+  bool _isLoading = true;
+  String _selectedDropdownValue = '1';
+
+  @override
+  void initState() {
+    super.initState();
+    loadData();
+  }
+
+  Future<void> loadData() async {
+    try {
+      // Read multiple files using rootBundle
+      List<String> fileNames = [
+        'AL7075_chatter_sound_vibro_t_001.lvm',
+        'AL7075_chatter_sound_vibro_t_002.lvm',
+        'AL7075_chatter_sound_vibro_t_003.lvm',
+        'AL7075_chatter_sound_vibro_t_004.lvm',
+        'AL7075_chatter_sound_vibro_t_005.lvm',
+        'AL7075_chatter_sound_vibro_t_006.lvm',
+        'AL7075_chatter_sound_vibro_t_007.lvm',
+        'AL7075_chatter_sound_vibro_t_008.lvm',
+        'AL7075_chatter_sound_vibro_t_009.lvm',
+        'AL7075_chatter_sound_vibro_t_010.lvm',
+        'AL7075_chatter_sound_vibro_t_011.lvm',
+        'AL7075_chatter_sound_vibro_t_012.lvm',
+        'AL7075_chatter_sound_vibro_t_013.lvm',
+        'AL7075_chatter_sound_vibro_t_014.lvm',
+        'AL7075_chatter_sound_vibro_t_015.lvm',
+        'AL7075_chatter_sound_vibro_t_016.lvm',
+        'AL7075_chatter_sound_vibro_t_017.lvm',
+        'AL7075_chatter_sound_vibro_t_018.lvm',
+        'AL7075_chatter_sound_vibro_t_019.lvm',
+        'AL7075_chatter_sound_vibro_t_020.lvm',
+        'AL7075_chatter_sound_vibro_t_021.lvm',
+        'AL7075_chatter_sound_vibro_t_022.lvm',
+        'AL7075_chatter_sound_vibro_t_023.lvm',
+        'AL7075_chatter_sound_vibro_t_024.lvm',
+        'AL7075_chatter_sound_vibro_t_025.lvm',
+        'AL7075_chatter_sound_vibro_t_026.lvm',
+        'AL7075_chatter_sound_vibro_t_027.lvm',
+        'AL7075_chatter_sound_vibro_t_028.lvm',
+        'AL7075_chatter_sound_vibro_t_029.lvm'
+      ];
+      Map<String, Map<String, double>> data = {};
+
+      for (var i = 0; i < fileNames.length; i++) {
+        String content =
+            await rootBundle.loadString('assets/data/${fileNames[i]}');
+        List<String> lines = content.split('\n');
+        for (var j = 0; j < lines.length; j++) {
+          List<String> tsv = lines[i].split('\t');
+          data[i.toString()] = {
+            't': double.parse(tsv[0].replaceAll(',', '.')),
+            's': double.parse(tsv[1].replaceAll(',', '.')),
+            'v': double.parse(tsv[2].replaceAll(',', '.')),
+          };
+        }
+      }
+
+      setState(() {
+        _dataList = data;
+        _isLoading = false;
+      });
+    } catch (error) {
+      print(error);
+    }
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    Widget bodyWidget;
+    if (_isLoading) {
+      bodyWidget = Center(
+        child: CircularProgressIndicator(),
+      );
+    } else {
+      bodyWidget = Center(
+        child: Text(_selectedIndex.toString()),
+      );
+    }
 
     return Scaffold(
-        appBar: AppBar(
-         // Here we take the value from the MyHomePage object that was created by
-         // the App.build method, and use it to set our appbar title.
-         title: Text(widget.title),
+      appBar: AppBar(
+        title: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(_appBarTitles[_selectedIndex]),
         ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              AspectRatio(
-                aspectRatio: 1.70,
-                child: DecoratedBox(
-                  decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(18),
-                    ),
-                    color: Color(0xff232d37),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                      right: 18,
-                      left: 12,
-                      top: 24,
-                      bottom: 12,
-                    ),
-                    child: LineChart(
-                      showAvg ? avgData() : mainData(),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: 60,
-                height: 34,
-                child: TextButton(
-                  onPressed: () {
-                    setState(() {
-                      showAvg = !showAvg;
-                    });
-                  },
-                  child: Text(
-                    'avg',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: showAvg ? Colors.white.withOpacity(0.5) : Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  DropdownButton<String>(
-                    value: dataSource,
-                    icon: const Icon(Icons.arrow_downward),
-                    elevation: 16,
-                    underline: Container(
-                      height: 2,
-                      color: Colors.blueAccent,
-                    ),
-                    onChanged: (String? value) {
-                      // This is called when the user selects an item.
-                      setState(() {
-                        dataSource = value!;
-                      });
-                    },
-                    items: list.map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                  ),
-                  Padding(padding: EdgeInsets.fromLTRB(16.0,0,16.0,0)),
-                  DropdownButton<String>(
-                    value: DataValueType,
-                    icon: const Icon(Icons.arrow_downward),
-                    elevation: 16,
-                    underline: Container(
-                      height: 2,
-                      color: Colors.blueAccent,
-                    ),
-                    onChanged: (String? value) {
-                      // This is called when the user selects an item.
-                      setState(() {
-                        DataValueType = value!;
-                      });
-                    },
-                    items: dataTypes.map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                  ),
-                ],
-              )
-            ],
+        actions: <Widget>[
+          // Add the DropdownButton widget here
+          DropdownButton<String>(
+            value: _selectedDropdownValue,
+            onChanged: (String? newValue) {
+              setState(() {
+                _selectedDropdownValue = newValue!;
+              });
+            },
+            items: _dataList.keys
+                .toList()
+                .map<DropdownMenuItem<String>>((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+              );
+            }).toList(),
           ),
-
-        ),
-    );
-  }
-
-  Widget bottomTitleWidgets(double value, TitleMeta meta) {
-    const style = TextStyle(
-      color: Color(0xff68737d),
-      fontWeight: FontWeight.bold,
-      fontSize: 16,
-    );
-    Widget text;
-    switch (value.toInt()) {
-      case 0:
-        text = const Text('0s', style: style);
-        break;
-      case 1:
-        text = const Text('1s', style: style);
-        break;
-      case 2:
-        text = const Text('2s', style: style);
-        break;
-      case 3:
-        text = const Text('3s', style: style);
-        break;
-      case 4:
-        text = const Text('Time', style: style);
-        break;
-      default:
-        text = const Text('', style: style);
-        break;
-    }
-
-    return SideTitleWidget(
-      axisSide: meta.axisSide,
-      child: text,
-    );
-  }
-
-  Widget leftTitleWidgets(double value, TitleMeta meta) {
-    const style = TextStyle(
-      color: Color(0xff67727d),
-      fontWeight: FontWeight.bold,
-      fontSize: 15,
-    );
-    String text;
-    switch (value.toInt()) {
-      case -30:
-        text = '-30K';
-        break;
-      case 0:
-        text = '0';
-        break;
-      case 30:
-        text = '30K';
-        break;
-      case 60:
-        text = '60k';
-        break;
-      case 90:
-        text = 'Vibration';
-        break;
-      default:
-        return Container();
-    }
-
-    return Text(text, style: style, textAlign: TextAlign.left);
-  }
-
-  LineChartData mainData() {
-    return LineChartData(
-      gridData: FlGridData(
-        show: true,
-        drawVerticalLine: true,
-        horizontalInterval: 1,
-        verticalInterval: 1,
-        getDrawingHorizontalLine: (value) {
-          return FlLine(
-            color: const Color(0xff37434d),
-            strokeWidth: 1,
-          );
-        },
-        getDrawingVerticalLine: (value) {
-          return FlLine(
-            color: const Color(0xff37434d),
-            strokeWidth: 1,
-          );
-        },
+        ],
       ),
-      titlesData: FlTitlesData(
-        show: true,
-        rightTitles: AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-        topTitles: AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-        bottomTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            reservedSize: 30,
-            interval: 1,
-            getTitlesWidget: bottomTitleWidgets,
+      body: bodyWidget,
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'Past Sessions',
           ),
-        ),
-        leftTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            interval: 1,
-            getTitlesWidget: leftTitleWidgets,
-            reservedSize: 42,
+          BottomNavigationBarItem(
+            icon: Icon(Icons.cloud_sync),
+            label: 'Last Session',
           ),
-        ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
       ),
-      borderData: FlBorderData(
-        show: true,
-        border: Border.all(color: const Color(0xff37434d)),
-      ),
-      minX: 0,
-      maxX: 5.2,
-      minY: -50,
-      maxY: 100,
-      lineBarsData: [
-        LineChartBarData(
-          spots: getDataAsSpots(DataValueType, dataSource),
-          isCurved: true,
-          gradient: LinearGradient(
-            colors: gradientColors,
-          ),
-          barWidth: 5,
-          isStrokeCapRound: true,
-          dotData: FlDotData(
-            show: false,
-          ),
-          belowBarData: BarAreaData(
-            show: true,
-            gradient: LinearGradient(
-              colors: gradientColors
-                  .map((color) => color.withOpacity(0.3))
-                  .toList(),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  LineChartData avgData() {
-    return LineChartData(
-      lineTouchData: LineTouchData(enabled: false),
-      gridData: FlGridData(
-        show: true,
-        drawHorizontalLine: true,
-        verticalInterval: 1,
-        horizontalInterval: 1,
-        getDrawingVerticalLine: (value) {
-          return FlLine(
-            color: const Color(0xff37434d),
-            strokeWidth: 1,
-          );
-        },
-        getDrawingHorizontalLine: (value) {
-          return FlLine(
-            color: const Color(0xff37434d),
-            strokeWidth: 1,
-          );
-        },
-      ),
-      titlesData: FlTitlesData(
-        show: true,
-        bottomTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            reservedSize: 30,
-            getTitlesWidget: bottomTitleWidgets,
-            interval: 1,
-          ),
-        ),
-        leftTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            getTitlesWidget: leftTitleWidgets,
-            reservedSize: 42,
-            interval: 1,
-          ),
-        ),
-        topTitles: AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-        rightTitles: AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-      ),
-      borderData: FlBorderData(
-        show: true,
-        border: Border.all(color: const Color(0xff37434d)),
-      ),
-      minX: 0,
-      maxX: 11,
-      minY: 0,
-      maxY: 6,
-      lineBarsData: [
-        LineChartBarData(
-          spots: const [
-            FlSpot(0, 3.44),
-            FlSpot(2.6, 3.44),
-            FlSpot(4.9, 3.44),
-            FlSpot(6.8, 3.44),
-            FlSpot(8, 3.44),
-            FlSpot(9.5, 3.44),
-            FlSpot(11, 3.44),
-          ],
-          isCurved: true,
-          gradient: LinearGradient(
-            colors: [
-              ColorTween(begin: gradientColors[0], end: gradientColors[1])
-                  .lerp(0.2)!,
-              ColorTween(begin: gradientColors[0], end: gradientColors[1])
-                  .lerp(0.2)!,
-            ],
-          ),
-          barWidth: 5,
-          isStrokeCapRound: true,
-          dotData: FlDotData(
-            show: false,
-          ),
-          belowBarData: BarAreaData(
-            show: true,
-            gradient: LinearGradient(
-              colors: [
-                ColorTween(begin: gradientColors[0], end: gradientColors[1])
-                    .lerp(0.2)!
-                    .withOpacity(0.1),
-                ColorTween(begin: gradientColors[0], end: gradientColors[1])
-                    .lerp(0.2)!
-                    .withOpacity(0.1),
-              ],
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
