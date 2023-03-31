@@ -1,16 +1,34 @@
 import 'package:flutter/material.dart';
 import 'dart:async' show Future;
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:flutter/material.dart';
 
 void main() => runApp(App());
 
+class _vibrationData {
+  final double value;
+  final double time;
+
+  _vibrationData({required this.value, required this.time});
+}
+
+class _soundData {
+  final double value;
+  final double time;
+
+  _soundData({required this.value, required this.time});
+}
+
 class App extends StatelessWidget {
+  const App({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Bottom Nav Demo',
       theme: ThemeData(
-        primarySwatch: MaterialColor(
+        primarySwatch: const MaterialColor(
           0xFF2F495E,
           <int, Color>{
             50: Color(0xFFE3F2FD),
@@ -26,13 +44,13 @@ class App extends StatelessWidget {
           },
         ),
       ),
-      home: HomePage(title: 'Past Sessions'),
+      home: const HomePage(title: 'Past Sessions'),
     );
-  }
+		}
 }
 
 class HomePage extends StatefulWidget {
-  HomePage({Key? key, required this.title}) : super(key: key);
+  const HomePage({Key? key, required this.title}) : super(key: key);
 
   final String title;
 
@@ -42,15 +60,17 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  Map<String, Map<String, double>> _dataList = {};
+  bool _isLoading = true;
+  String _selectedDropdownValue = '1';
 
   static const List<String> _appBarTitles = <String>[
     'Past Sessions',
     'Last Session',
   ];
 
-  Map<String, Map<String, double>> _dataList = {};
-  bool _isLoading = true;
-  String _selectedDropdownValue = '1';
+  List<Map<String, double>> _vibrationData = [];
+  List<Map<String, double>> _soundData = [];
 
   @override
   void initState() {
@@ -123,11 +143,16 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  /*
+    build-function
+  */
   @override
   Widget build(BuildContext context) {
+    // ignore: unused_local_variable
     Widget bodyWidget;
+
     if (_isLoading) {
-      bodyWidget = Center(
+      bodyWidget = const Center(
         child: CircularProgressIndicator(),
       );
     } else {
@@ -136,6 +161,12 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
+    _dataList.forEach((key, value) {
+      _vibrationData
+          .add({"time": value["t"] ?? 0.0, "vibration": value["v"] ?? 0.0});
+      _soundData.add({"time": value["t"] ?? 0.0, "sound": value["s"] ?? 0.0});
+    });
+
     return Scaffold(
       appBar: AppBar(
         title: Align(
@@ -143,14 +174,18 @@ class _HomePageState extends State<HomePage> {
           child: Text(_appBarTitles[_selectedIndex]),
         ),
         actions: <Widget>[
-          // Add the DropdownButton widget here
+          /*
+            dropdown-widget
+          */
           DropdownButton<String>(
             value: _selectedDropdownValue,
-            onChanged: (String? newValue) {
-              setState(() {
-                _selectedDropdownValue = newValue!;
-              });
-            },
+            onChanged: 
+              (String? newValue, List<Map<String, double>> newVibration,  List<Map<String, double>> newSound) {
+                  setState(() {
+                    _selectedDropdownValue = newValue!;
+                    _vibrationData = newVibration;
+                    _soundData = newSound;
+                  }));
             items: _dataList.keys
                 .toList()
                 .map<DropdownMenuItem<String>>((String value) {
@@ -162,7 +197,55 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: bodyWidget,
+      /*
+        charts
+      */
+      body: Column(
+        children: [
+          /*
+          vibration
+        */
+          Expanded(
+            child: SfCartesianChart(
+              title: ChartTitle(text: "Vibration/Time"),
+              legend: Legend(isVisible: true),
+              series: <ChartSeries>[
+                LineSeries<Map<String, double>, double>(
+                  dataSource: _vibrationData,
+                  xValueMapper: (Map<String, double> data, _) => data["time"],
+                  yValueMapper: (Map<String, double> data, _) =>
+                      data["vibration"],
+                  name: "Vibration",
+                ),
+              ],
+              primaryXAxis: NumericAxis(),
+              primaryYAxis: NumericAxis(),
+            ),
+          ),
+          /*
+          sound
+        */
+          Expanded(
+            child: SfCartesianChart(
+              title: ChartTitle(text: "Sound/Time"),
+              legend: Legend(isVisible: true),
+              series: <ChartSeries>[
+                LineSeries<Map<String, double>, double>(
+                  dataSource: _soundData,
+                  xValueMapper: (Map<String, double> data, _) => data["time"],
+                  yValueMapper: (Map<String, double> data, _) => data["sound"],
+                  name: "Sound",
+                ),
+              ],
+              primaryXAxis: NumericAxis(),
+              primaryYAxis: NumericAxis(),
+            ),
+          ),
+        ],
+      ),
+      /*
+        navigation-bar
+      */
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
