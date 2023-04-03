@@ -49,6 +49,7 @@ class _SessionState extends State<Session> {
     });
   }
 
+// TODO: add analysis table
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,13 +88,14 @@ class _SessionState extends State<Session> {
           : Column(
               children: [
                 Expanded(
+                  // TODO: fix charts and do research on library
                   child: SfCartesianChart(
                     title: ChartTitle(text: "Vibration/Time"),
                     legend: Legend(isVisible: true),
                     series: <ChartSeries>[
                       LineSeries<TSV, double>(
                         dataSource: _chartData,
-                        xValueMapper: (TSV data, _) => data.time,
+                        xValueMapper: (TSV data, _) => data.time * 10000.0,
                         yValueMapper: (TSV data, _) => data.vibration,
                         name: "Vibration",
                       ),
@@ -109,7 +111,7 @@ class _SessionState extends State<Session> {
                     series: <ChartSeries>[
                       LineSeries<TSV, double>(
                         dataSource: _chartData,
-                        xValueMapper: (TSV data, _) => data.time,
+                        xValueMapper: (TSV data, _) => data.time * 10000.0,
                         yValueMapper: (TSV data, _) => data.sound,
                         name: "Sound",
                       ),
