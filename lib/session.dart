@@ -54,22 +54,29 @@ class _SessionState extends State<Session> {
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
-          DropdownButton<String>(
-            value: _selectedDropdownValue,
-            onChanged: (String? newValue) {
-              setState(() {
-                _selectedDropdownValue = newValue!;
-              });
-              // updateChartData(_selectedDropdownValue);
-            },
-            items: widget.tsvData.keys.toList().map<DropdownMenuItem<String>>(
-              (String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: const BoxDecoration(
+              color: Colors.indigo, //<-- SEE HERE
+            ),
+            child: DropdownButton<String>(
+              value: _selectedDropdownValue,
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedDropdownValue = newValue!;
+                });
+                // updateChartData(_selectedDropdownValue);
               },
-            ).toList(),
+              items: widget.tsvData.keys.toList().map<DropdownMenuItem<String>>(
+                (String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                },
+              ).toList(),
+              iconEnabledColor: const Color(0xFFE3F2FD),
+            ),
           ),
         ],
       ),
