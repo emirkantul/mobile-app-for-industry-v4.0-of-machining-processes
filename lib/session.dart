@@ -1,5 +1,3 @@
-import 'dart:developer';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -41,12 +39,14 @@ class _SessionState extends State<Session> {
   void initState() {
     super.initState();
     _trackballBehaviorVibration = TrackballBehavior(enable: true);
-    _zoomBehaviorVibration = ZoomPanBehavior(enablePinching: true,
-        enableDoubleTapZooming: true,
-    enableMouseWheelZooming: true,
+    _zoomBehaviorVibration = ZoomPanBehavior(
+      enablePinching: true,
+      enableDoubleTapZooming: true,
+      enableMouseWheelZooming: true,
     );
     _trackballBehaviorSound = TrackballBehavior(enable: true);
-    _zoomBehaviorSound = ZoomPanBehavior(enablePinching: true,
+    _zoomBehaviorSound = ZoomPanBehavior(
+      enablePinching: true,
       enableDoubleTapZooming: true,
       enableMouseWheelZooming: true,
     );
@@ -70,7 +70,8 @@ class _SessionState extends State<Session> {
     List<TSV> shrinked = [];
     int targetDataLength = 13000; // 13000 seems to be the cap for charts
 
-    if(tsvs.length > targetDataLength) { // data is too large, apply average downsampling
+    if (tsvs.length > targetDataLength) {
+      // data is too large, apply average downsampling
       int shrinkFactor = (tsvs.length / targetDataLength).ceil();
 
       double timeSum = 0;
@@ -78,32 +79,47 @@ class _SessionState extends State<Session> {
       double soundSum = 0;
       var factorCount = 1;
 
-      for(var i = 0; i < tsvs.length; i++){
+      for (var i = 0; i < tsvs.length; i++) {
         timeSum += tsvs[i].time;
         vibrationSum += tsvs[i].vibration;
         soundSum += tsvs[i].sound;
 
-        if(factorCount == shrinkFactor){
-          TSV values = TSV(time: timeSum / shrinkFactor,
+        if (factorCount == shrinkFactor) {
+          TSV values = TSV(
+              time: timeSum / shrinkFactor,
               sound: soundSum / shrinkFactor,
-              vibration: vibrationSum /shrinkFactor);
+              vibration: vibrationSum / shrinkFactor);
           shrinked.add(values);
           timeSum = 0;
           soundSum = 0;
           vibrationSum = 0;
           factorCount = 1;
-        }
-        else{
+        } else {
           factorCount += 1;
         }
       }
-
-    }
-    else { // data is small enough to not cause performance problems
+    } else {
+      // data is small enough to not cause performance problems
       shrinked = tsvs;
     }
 
     return shrinked;
+  }
+
+  void _zoomInVib() {
+    _zoomBehaviorVibration.zoomIn();
+  }
+
+  void _zoomOutVib() {
+    _zoomBehaviorVibration.zoomOut();
+  }
+
+  void _zoomOutSound() {
+    _zoomBehaviorSound.zoomOut();
+  }
+
+  void _zoomInSound() {
+    _zoomBehaviorSound.zoomIn();
   }
 
 // TODO: add analysis table
@@ -146,41 +162,117 @@ class _SessionState extends State<Session> {
           : Column(
               children: [
                 Expanded(
-                  child: SfCartesianChart(
-                    title: ChartTitle(text: "Vibration/Time"),
-                    legend: Legend(isVisible: true),
-                    series: <ChartSeries>[
-                      FastLineSeries<TSV, double>(
-                        dataSource: _chartData,
-                        xValueMapper: (TSV data, _) => data.time * 10000.0,
-                        yValueMapper: (TSV data, _) => data.vibration,
-                        name: "Vibration",
-                        animationDuration: 0,
+                  child: Stack(
+                    children: [
+                      SizedBox(
+                        width: 600,
+                        child: SfCartesianChart(
+                          title: ChartTitle(text: "Vibration/Time"),
+                          legend: Legend(isVisible: true),
+                          series: <ChartSeries>[
+                            FastLineSeries<TSV, double>(
+                              dataSource: _chartData,
+                              xValueMapper: (TSV data, _) =>
+                                  data.time * 10000.0,
+                              yValueMapper: (TSV data, _) => data.vibration,
+                              name: "Vibration",
+                              animationDuration: 0,
+                            ),
+                          ],
+                          primaryXAxis: NumericAxis(),
+                          primaryYAxis: NumericAxis(),
+                          trackballBehavior: _trackballBehaviorVibration,
+                          zoomPanBehavior: _zoomBehaviorVibration,
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 10,
+                        right: 10,
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  SizedBox(
+                                    child: IconButton(
+                                      icon: const Icon(Icons.add),
+                                      onPressed: _zoomInVib,
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    child: IconButton(
+                                      icon: const Icon(Icons.remove),
+                                      onPressed: _zoomOutVib,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const Text(
+                                "Zoom",
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
-                    primaryXAxis: NumericAxis(),
-                    primaryYAxis: NumericAxis(),
-                    trackballBehavior: _trackballBehaviorVibration,
-                    zoomPanBehavior: _zoomBehaviorVibration,
                   ),
                 ),
                 Expanded(
-                  child: SfCartesianChart(
-                    title: ChartTitle(text: "Sound/Time"),
-                    legend: Legend(isVisible: true),
-                    series: <ChartSeries>[
-                      FastLineSeries<TSV, double>(
-                        dataSource: _chartData,
-                        xValueMapper: (TSV data, _) => data.time * 10000.0,
-                        yValueMapper: (TSV data, _) => data.sound,
-                        name: "Sound",
-                        animationDuration: 0,
+                  child: Stack(
+                    children: [
+                      SizedBox(
+                        width: 600,
+                        child: SfCartesianChart(
+                          title: ChartTitle(text: "Sound/Time"),
+                          legend: Legend(isVisible: true),
+                          series: <ChartSeries>[
+                            FastLineSeries<TSV, double>(
+                              dataSource: _chartData,
+                              xValueMapper: (TSV data, _) =>
+                                  data.time * 10000.0,
+                              yValueMapper: (TSV data, _) => data.sound,
+                              name: "Sound",
+                              animationDuration: 0,
+                            ),
+                          ],
+                          primaryXAxis: NumericAxis(),
+                          primaryYAxis: NumericAxis(),
+                          trackballBehavior: _trackballBehaviorSound,
+                          zoomPanBehavior: _zoomBehaviorSound,
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 10,
+                        right: 10,
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  SizedBox(
+                                    child: IconButton(
+                                      icon: const Icon(Icons.add),
+                                      onPressed: _zoomInSound,
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    child: IconButton(
+                                      icon: const Icon(Icons.remove),
+                                      onPressed: _zoomOutSound,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const Text(
+                                "Zoom",
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
-                    primaryXAxis: NumericAxis(),
-                    primaryYAxis: NumericAxis(),
-                    trackballBehavior: _trackballBehaviorSound,
-                    zoomPanBehavior: _zoomBehaviorSound,
                   ),
                 ),
               ],
