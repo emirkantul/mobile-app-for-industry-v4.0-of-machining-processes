@@ -87,49 +87,54 @@ class _HomePageState extends State<HomePage> {
       List<String> fileNames = [
         'AL7075_chatter_sound_vibro_t_001.lvm',
         'AL7075_chatter_sound_vibro_t_002.lvm',
-        // 'AL7075_chatter_sound_vibro_t_003.lvm',
-        // 'AL7075_chatter_sound_vibro_t_004.lvm',
-        // 'AL7075_chatter_sound_vibro_t_005.lvm',
-        // 'AL7075_chatter_sound_vibro_t_006.lvm',
-        // 'AL7075_chatter_sound_vibro_t_007.lvm',
-        // 'AL7075_chatter_sound_vibro_t_008.lvm',
-        // 'AL7075_chatter_sound_vibro_t_009.lvm',
-        // 'AL7075_chatter_sound_vibro_t_010.lvm',
-        // 'AL7075_chatter_sound_vibro_t_011.lvm',
-        // 'AL7075_chatter_sound_vibro_t_012.lvm',
-        // 'AL7075_chatter_sound_vibro_t_013.lvm',
-        // 'AL7075_chatter_sound_vibro_t_014.lvm',
-        // 'AL7075_chatter_sound_vibro_t_015.lvm',
-        // 'AL7075_chatter_sound_vibro_t_016.lvm',
-        // 'AL7075_chatter_sound_vibro_t_017.lvm',
-        // 'AL7075_chatter_sound_vibro_t_018.lvm',
-        // 'AL7075_chatter_sound_vibro_t_019.lvm',
-        // 'AL7075_chatter_sound_vibro_t_020.lvm',
-        // 'AL7075_chatter_sound_vibro_t_021.lvm',
-        // 'AL7075_chatter_sound_vibro_t_022.lvm',
-        // 'AL7075_chatter_sound_vibro_t_023.lvm',
-        // 'AL7075_chatter_sound_vibro_t_024.lvm',
-        // 'AL7075_chatter_sound_vibro_t_025.lvm',
-        // 'AL7075_chatter_sound_vibro_t_026.lvm',
-        // 'AL7075_chatter_sound_vibro_t_027.lvm',
-        // 'AL7075_chatter_sound_vibro_t_028.lvm',
-        // 'AL7075_chatter_sound_vibro_t_029.lvm'
+        'AL7075_chatter_sound_vibro_t_003.lvm',
+        'AL7075_chatter_sound_vibro_t_004.lvm',
+        'AL7075_chatter_sound_vibro_t_005.lvm',
+        'AL7075_chatter_sound_vibro_t_006.lvm',
+        'AL7075_chatter_sound_vibro_t_007.lvm',
+        'AL7075_chatter_sound_vibro_t_008.lvm',
+        'AL7075_chatter_sound_vibro_t_009.lvm',
+        'AL7075_chatter_sound_vibro_t_010.lvm',
+        'AL7075_chatter_sound_vibro_t_011.lvm',
+        'AL7075_chatter_sound_vibro_t_012.lvm',
+        'AL7075_chatter_sound_vibro_t_013.lvm',
+        'AL7075_chatter_sound_vibro_t_014.lvm',
+        'AL7075_chatter_sound_vibro_t_015.lvm',
+        'AL7075_chatter_sound_vibro_t_016.lvm',
+        'AL7075_chatter_sound_vibro_t_017.lvm',
+        'AL7075_chatter_sound_vibro_t_018.lvm',
+        'AL7075_chatter_sound_vibro_t_019.lvm',
+        'AL7075_chatter_sound_vibro_t_020.lvm',
+        'AL7075_chatter_sound_vibro_t_021.lvm',
+        'AL7075_chatter_sound_vibro_t_022.lvm',
+        'AL7075_chatter_sound_vibro_t_023.lvm',
+        'AL7075_chatter_sound_vibro_t_024.lvm',
+        'AL7075_chatter_sound_vibro_t_025.lvm',
+        'AL7075_chatter_sound_vibro_t_026.lvm',
+        'AL7075_chatter_sound_vibro_t_027.lvm',
+        'AL7075_chatter_sound_vibro_t_028.lvm',
+        'AL7075_chatter_sound_vibro_t_029.lvm'
       ];
       Map<String, List<TSV>> allTsv = {};
-      List<TSV> tsvs = [];
 
       for (var i = 0; i < fileNames.length; i++) {
+        List<TSV> tsvs = [];
         String content =
             await rootBundle.loadString('assets/data/${fileNames[i]}');
         List<String> lines = content.split('\n');
 
         for (var j = 0; j < lines.length; j++) {
-          List<String> tsvLine = lines[i].split('\t');
-          tsvs.add(TSV(
-            time: double.parse(tsvLine[0].replaceAll(',', '.')),
-            sound: double.parse(tsvLine[1].replaceAll(',', '.')),
-            vibration: double.parse(tsvLine[2].replaceAll(',', '.')),
-          ));
+          try{
+            List<String> tsvLine = lines[j].split('\t');
+            tsvs.add(TSV(
+              time: double.parse(tsvLine[0].replaceAll(',', '.')),
+              sound: double.parse(tsvLine[1].replaceAll(',', '.')),
+              vibration: double.parse(tsvLine[2].replaceAll(',', '.')),
+            ));
+          }
+          catch (err) {
+            log(err.toString());
+          }
         }
 
         allTsv["$i-xxxxxxxx"] = tsvs; // TODO: add session date

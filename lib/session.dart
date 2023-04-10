@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -29,13 +30,26 @@ class _SessionState extends State<Session> {
   bool _isLoading = true;
   String _selectedDropdownValue = '0-xxxxxxxx';
   List<TSV> _chartData = [];
-
+  late TrackballBehavior _trackballBehaviorVibration;
+  late TrackballBehavior _trackballBehaviorSound;
+  late ZoomPanBehavior _zoomBehaviorVibration;
+  late ZoomPanBehavior _zoomBehaviorSound;
   /*
     init-state
   */
   @override
   void initState() {
     super.initState();
+    _trackballBehaviorVibration = TrackballBehavior(enable: true);
+    _zoomBehaviorVibration = ZoomPanBehavior(enablePinching: true,
+        enableDoubleTapZooming: true,
+    enableMouseWheelZooming: true,
+    );
+    _trackballBehaviorSound = TrackballBehavior(enable: true);
+    _zoomBehaviorSound = ZoomPanBehavior(enablePinching: true,
+      enableDoubleTapZooming: true,
+      enableMouseWheelZooming: true,
+    );
     _updateChartData('0-xxxxxxxx'); // Load initial data for session 0
   }
 
@@ -44,9 +58,52 @@ class _SessionState extends State<Session> {
   */
   void _updateChartData(String selectedDropdownValue) {
     setState(() {
-      _chartData = widget.tsvData[selectedDropdownValue]!;
+      _chartData = shrinkDataStrategy(widget.tsvData[selectedDropdownValue]!);
       _isLoading = false;
     });
+  }
+
+  /*
+    shrinks data for drawing on charts without performance issues
+  */
+  List<TSV> shrinkDataStrategy(List<TSV> tsvs) {
+    List<TSV> shrinked = [];
+    int targetDataLength = 13000; // 13000 seems to be the cap for charts
+
+    if(tsvs.length > targetDataLength) { // data is too large, apply average downsampling
+      int shrinkFactor = (tsvs.length / targetDataLength).ceil();
+
+      double timeSum = 0;
+      double vibrationSum = 0;
+      double soundSum = 0;
+      var factorCount = 1;
+
+      for(var i = 0; i < tsvs.length; i++){
+        timeSum += tsvs[i].time;
+        vibrationSum += tsvs[i].vibration;
+        soundSum += tsvs[i].sound;
+
+        if(factorCount == shrinkFactor){
+          TSV values = TSV(time: timeSum / shrinkFactor,
+              sound: soundSum / shrinkFactor,
+              vibration: vibrationSum /shrinkFactor);
+          shrinked.add(values);
+          timeSum = 0;
+          soundSum = 0;
+          vibrationSum = 0;
+          factorCount = 1;
+        }
+        else{
+          factorCount += 1;
+        }
+      }
+
+    }
+    else { // data is small enough to not cause performance problems
+      shrinked = tsvs;
+    }
+
+    return shrinked;
   }
 
 // TODO: add analysis table
@@ -65,6 +122,7 @@ class _SessionState extends State<Session> {
               onChanged: (String? newValue) {
                 setState(() {
                   _selectedDropdownValue = newValue!;
+                  _updateChartData(_selectedDropdownValue);
                 });
                 // updateChartData(_selectedDropdownValue);
               },
@@ -88,20 +146,22 @@ class _SessionState extends State<Session> {
           : Column(
               children: [
                 Expanded(
-                  // TODO: fix charts and do research on library
                   child: SfCartesianChart(
                     title: ChartTitle(text: "Vibration/Time"),
                     legend: Legend(isVisible: true),
                     series: <ChartSeries>[
-                      LineSeries<TSV, double>(
+                      FastLineSeries<TSV, double>(
                         dataSource: _chartData,
                         xValueMapper: (TSV data, _) => data.time * 10000.0,
                         yValueMapper: (TSV data, _) => data.vibration,
                         name: "Vibration",
+                        animationDuration: 0,
                       ),
                     ],
                     primaryXAxis: NumericAxis(),
                     primaryYAxis: NumericAxis(),
+                    trackballBehavior: _trackballBehaviorVibration,
+                    zoomPanBehavior: _zoomBehaviorVibration,
                   ),
                 ),
                 Expanded(
@@ -109,15 +169,18 @@ class _SessionState extends State<Session> {
                     title: ChartTitle(text: "Sound/Time"),
                     legend: Legend(isVisible: true),
                     series: <ChartSeries>[
-                      LineSeries<TSV, double>(
+                      FastLineSeries<TSV, double>(
                         dataSource: _chartData,
                         xValueMapper: (TSV data, _) => data.time * 10000.0,
                         yValueMapper: (TSV data, _) => data.sound,
                         name: "Sound",
+                        animationDuration: 0,
                       ),
                     ],
                     primaryXAxis: NumericAxis(),
                     primaryYAxis: NumericAxis(),
+                    trackballBehavior: _trackballBehaviorSound,
+                    zoomPanBehavior: _zoomBehaviorSound,
                   ),
                 ),
               ],
