@@ -21,23 +21,6 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Mobile App for Industry v4.0 Milling Process',
-      theme: ThemeData(
-        primarySwatch: const MaterialColor(
-          0xFF2F495E,
-          <int, Color>{
-            50: Color(0xFFE3F2FD),
-            100: Color(0xFFBBDEFB),
-            200: Color(0xFF90CAF9),
-            300: Color(0xFF64B5F6),
-            400: Color(0xFF42A5F5),
-            500: Color(0xFF2196F3),
-            600: Color(0xFF1E88E5),
-            700: Color(0xFF1976D2),
-            800: Color(0xFF1565C0),
-            900: Color(0xFF0D47A1),
-          },
-        ),
-      ),
       home: const HomePage(title: 'Past Sessions'),
     );
   }
@@ -124,15 +107,14 @@ class _HomePageState extends State<HomePage> {
         List<String> lines = content.split('\n');
 
         for (var j = 0; j < lines.length; j++) {
-          try{
+          try {
             List<String> tsvLine = lines[j].split('\t');
             tsvs.add(TSV(
               time: double.parse(tsvLine[0].replaceAll(',', '.')),
               sound: double.parse(tsvLine[1].replaceAll(',', '.')),
               vibration: double.parse(tsvLine[2].replaceAll(',', '.')),
             ));
-          }
-          catch (err) {
+          } catch (err) {
             log(err.toString());
           }
         }
@@ -162,6 +144,8 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.grey.shade900,
+        elevation: 0,
         title: Align(
           alignment: Alignment.centerLeft,
           child: Text(_appBarTitles[_selectedTabIndex]),
@@ -175,6 +159,9 @@ class _HomePageState extends State<HomePage> {
               tsvData: _tsvData,
             ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.grey.shade900,
+        selectedItemColor: Colors.grey.shade400,
+        unselectedItemColor: Colors.grey.shade600,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.history),

@@ -126,14 +126,17 @@ class _SessionState extends State<Session> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey.shade900,
       appBar: AppBar(
+        backgroundColor: Colors.grey.shade900,
         actions: <Widget>[
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: const BoxDecoration(
-              color: Colors.indigo, //<-- SEE HERE
+            decoration: BoxDecoration(
+              color: Colors.grey.shade900, //<-- SEE HERE
             ),
             child: DropdownButton<String>(
+              dropdownColor: Colors.grey.shade800,
               value: _selectedDropdownValue,
               onChanged: (String? newValue) {
                 setState(() {
@@ -146,7 +149,8 @@ class _SessionState extends State<Session> {
                 (String value) {
                   return DropdownMenuItem<String>(
                     value: value,
-                    child: Text(value),
+                    child: Text(value,
+                        style: const TextStyle(color: Colors.white)),
                   );
                 },
               ).toList(),
@@ -171,6 +175,7 @@ class _SessionState extends State<Session> {
                           legend: Legend(isVisible: true),
                           series: <ChartSeries>[
                             FastLineSeries<TSV, double>(
+                              color: Colors.green.shade800,
                               dataSource: _chartData,
                               xValueMapper: (TSV data, _) =>
                                   data.time * 10000.0,
@@ -228,6 +233,7 @@ class _SessionState extends State<Session> {
                           legend: Legend(isVisible: true),
                           series: <ChartSeries>[
                             FastLineSeries<TSV, double>(
+                              color: Colors.green.shade800,
                               dataSource: _chartData,
                               xValueMapper: (TSV data, _) =>
                                   data.time * 10000.0,
