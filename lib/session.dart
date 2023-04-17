@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
+import 'AnalysisTable.dart';
+
 /*
   data-types
 */
@@ -128,6 +130,15 @@ class _SessionState extends State<Session> {
     return Scaffold(
       backgroundColor: Colors.grey.shade900,
       appBar: AppBar(
+        leading: TextButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AnalysisTable()),
+            );
+          },
+          child: const Text('Table'),
+        ),
         backgroundColor: Colors.grey.shade900,
         actions: <Widget>[
           Container(
