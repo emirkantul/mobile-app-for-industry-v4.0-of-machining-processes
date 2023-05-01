@@ -182,8 +182,9 @@ class _SessionState extends State<Session> {
                       SizedBox(
                         width: 600,
                         child: SfCartesianChart(
-                          title: ChartTitle(text: "Vibration/Time"),
-                          legend: Legend(isVisible: true),
+                          title: ChartTitle(text: "Vibration/Time",
+                              textStyle: TextStyle(color: Colors.grey)),
+                          legend: Legend(isVisible: false),
                           series: <ChartSeries>[
                             FastLineSeries<TSV, double>(
                               color: Colors.green.shade800,
@@ -195,13 +196,13 @@ class _SessionState extends State<Session> {
                               animationDuration: 0,
                             ),
                           ],
-                          primaryXAxis: NumericAxis(),
-                          primaryYAxis: NumericAxis(),
+                          primaryXAxis: NumericAxis(labelStyle: TextStyle(color: Colors.grey)),
+                          primaryYAxis: NumericAxis(labelStyle: TextStyle(color: Colors.grey)),
                           trackballBehavior: _trackballBehaviorVibration,
                           zoomPanBehavior: _zoomBehaviorVibration,
                         ),
                       ),
-                      Positioned(
+                      /*Positioned(
                         bottom: 10,
                         right: 10,
                         child: Align(
@@ -230,7 +231,7 @@ class _SessionState extends State<Session> {
                             ],
                           ),
                         ),
-                      ),
+                      ),*/
                     ],
                   ),
                 ),
@@ -240,8 +241,9 @@ class _SessionState extends State<Session> {
                       SizedBox(
                         width: 600,
                         child: SfCartesianChart(
-                          title: ChartTitle(text: "Sound/Time"),
-                          legend: Legend(isVisible: true),
+                          title: ChartTitle(text: "Sound/Time" ,
+                              textStyle: TextStyle(color: Colors.grey)),
+                          legend: Legend(isVisible: false),
                           series: <ChartSeries>[
                             FastLineSeries<TSV, double>(
                               color: Colors.green.shade800,
@@ -253,13 +255,13 @@ class _SessionState extends State<Session> {
                               animationDuration: 0,
                             ),
                           ],
-                          primaryXAxis: NumericAxis(),
-                          primaryYAxis: NumericAxis(),
+                          primaryXAxis: NumericAxis(labelStyle: TextStyle(color: Colors.grey)),
+                          primaryYAxis: NumericAxis(labelStyle: TextStyle(color: Colors.grey)),
                           trackballBehavior: _trackballBehaviorSound,
                           zoomPanBehavior: _zoomBehaviorSound,
                         ),
                       ),
-                      Positioned(
+                      /*Positioned(
                         bottom: 10,
                         right: 10,
                         child: Align(
@@ -288,7 +290,7 @@ class _SessionState extends State<Session> {
                             ],
                           ),
                         ),
-                      ),
+                      ),*/
                     ],
                   ),
                 ),
