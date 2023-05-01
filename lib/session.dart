@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-
 import 'AnalysisTable.dart';
 
 /*
@@ -56,7 +55,7 @@ class _SessionState extends State<Session> {
   }
 
   /* 
-    update-tsv-data
+    update-tsv.dart-data
   */
   void _updateChartData(String selectedDropdownValue) {
     setState(() {
@@ -134,7 +133,7 @@ class _SessionState extends State<Session> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => AnalysisTable()),
+              MaterialPageRoute(builder: (context) => AnalysisTable(data: widget.tsvData[_selectedDropdownValue]!)),
             );
           },
           child: const Text('Table'),

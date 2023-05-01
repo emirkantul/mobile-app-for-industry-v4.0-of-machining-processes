@@ -1,8 +1,6 @@
 import 'session.dart';
 import 'dart:math';
 
-//TODO: implement given equations
-
 Map<String, double> tsvMax(List<TSV> data) => {
       'tMax': data
           .map((e) => e.time)
