@@ -201,36 +201,6 @@ class _SessionState extends State<Session> {
                           zoomPanBehavior: _zoomBehaviorVibration,
                         ),
                       ),
-                      /*Positioned(
-                        bottom: 10,
-                        right: 10,
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: Column(
-                            children: [
-                              Row(
-                                children: [
-                                  SizedBox(
-                                    child: IconButton(
-                                      icon: const Icon(Icons.add),
-                                      onPressed: _zoomInVib,
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    child: IconButton(
-                                      icon: const Icon(Icons.remove),
-                                      onPressed: _zoomOutVib,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const Text(
-                                "Zoom",
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),*/
                     ],
                   ),
                 ),
@@ -260,36 +230,6 @@ class _SessionState extends State<Session> {
                           zoomPanBehavior: _zoomBehaviorSound,
                         ),
                       ),
-                      /*Positioned(
-                        bottom: 10,
-                        right: 10,
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: Column(
-                            children: [
-                              Row(
-                                children: [
-                                  SizedBox(
-                                    child: IconButton(
-                                      icon: const Icon(Icons.add),
-                                      onPressed: _zoomInSound,
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    child: IconButton(
-                                      icon: const Icon(Icons.remove),
-                                      onPressed: _zoomOutSound,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const Text(
-                                "Zoom",
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),*/
                     ],
                   ),
                 ),

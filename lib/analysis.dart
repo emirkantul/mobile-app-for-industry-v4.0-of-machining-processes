@@ -1,46 +1,80 @@
 import 'session.dart';
 import 'dart:math';
 
-Map<String, double> tsvMax(List<TSV> data) => {
-      'tMax': data
-          .map((e) => e.time)
-          .reduce((value, element) => max(value, element)),
-      'sMax': data
-          .map((e) => e.sound)
-          .reduce((value, element) => max(value, element)),
-      'vMax': data
-          .map((e) => e.vibration)
-          .reduce((value, element) => max(value, element)),
+List<List<double>> splitIntoChunks<T>(List<double> list, int chunkLength) {
+  List<List<double>> chunks = [];
+  for (var i = 0; i < list.length; i += chunkLength) {
+    chunks.add(list.sublist(i, i+chunkLength > list.length ? list.length : i + chunkLength));
+  };
+  return chunks;
+}
+
+List<double> maxValues(List<List<double>> list) {
+  List<double> values = [];
+  for(var i = 0; i < list.length; i++) {
+    values.add(list[i].reduce((value, element) => max(value,element)));
+  }
+  return values;
+}
+
+Map<String, List<double>> tsvMax(List<TSV> data, int period) => {
+      'tMax': maxValues(splitIntoChunks(data
+          .map((e) => e.time).toList(), period)),
+      'sMax': maxValues(splitIntoChunks(data
+          .map((e) => e.sound).toList(), period)),
+      'vMax': maxValues(splitIntoChunks(data
+          .map((e) => e.vibration).toList(), period)),
     };
 
-Map<String, double> tsvMin(List<TSV> data) => {
-      'tMin': data
-          .map((e) => e.time)
-          .reduce((value, element) => min(value, element)),
-      'sMin': data
-          .map((e) => e.sound)
-          .reduce((value, element) => min(value, element)),
-      'vMin': data
-          .map((e) => e.vibration)
-          .reduce((value, element) => min(value, element)),
+List<double> minValues(List<List<double>> list) {
+  List<double> values = [];
+  for(var i = 0; i < list.length; i++) {
+    values.add(list[i].reduce((value, element) => min(value,element)));
+  }
+  return values;
+}
+
+Map<String, List<double>> tsvMin(List<TSV> data, int period) => {
+      'tMin': minValues(splitIntoChunks(data
+          .map((e) => e.time).toList(), period)),
+      'sMin': minValues(splitIntoChunks(data
+          .map((e) => e.sound).toList(), period)),
+      'vMin': minValues(splitIntoChunks(data
+          .map((e) => e.vibration).toList(), period)),
     };
 
-Map<String, double> tsvAvg(List<TSV> data) => {
+List<double> avgValues(List<List<double>> list) {
+  List<double> values = [];
+  for(var i = 0; i < list.length; i++) {
+    values.add(list[i].reduce((value, element) => (value + element) / list.length));
+  }
+  return values;
+}
+
+Map<String, List<double>> tsvAvg(List<TSV> data, int period) => {
       'tAvg':
-          data.map((e) => e.time).reduce((value, element) => value + element) /
-              data.length,
+        avgValues(splitIntoChunks(data
+            .map((e) => e.time).toList(), period)),
       'sAvg':
-          data.map((e) => e.sound).reduce((value, element) => value + element) /
-              data.length,
+        avgValues(splitIntoChunks(data
+            .map((e) => e.sound).toList(), period)),
       'vAvg':
-          data.map((e) => e.sound).reduce((value, element) => value + element) /
-              data.length,
+        avgValues(splitIntoChunks(data
+            .map((e) => e.vibration).toList(), period)),
     };
 
-Map<String, double> tsvP2P(
-        Map<String, double> maxTsv, Map<String, double> minTsv) =>
+List<double> p2pValues(List<double> maxList, List<double> minList) {
+  List<double> values = [];
+  for(var i = 0; i < maxList.length; i++) {
+    values.add(maxList[i] - minList[i]);
+  }
+  return values;
+}
+
+Map<String, List<double>> tsvP2P(
+        Map<String, List<double>> maxTsv, Map<String, List<double>> minTsv) =>
     {
-      'tP2P': maxTsv['tMax']! - minTsv['tMin']!,
-      'sP2P': maxTsv['sMax']! - minTsv['sMin']!,
-      'vP2P': maxTsv['vMax']! - minTsv['vMin']!,
+      'tP2P': p2pValues(maxTsv['tMax']!, minTsv['tMin']!),
+      'sP2P': p2pValues(maxTsv['sMax']!, minTsv['sMin']!),
+      'vP2P': p2pValues(maxTsv['vMax']!, minTsv['vMin']!),
     };
