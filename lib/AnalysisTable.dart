@@ -23,6 +23,8 @@ class _AnalysisTableState extends State<AnalysisTable> {
   List<TSV> _minimumData = [];
   List<TSV> _averageData = [];
   List<TSV> _P2PData = [];
+  List<TSV> _varianceData = [];
+  List<TSV> _standardDeviationData = []; // New list for standard deviation form factor values
 
   final revolutionsCount = TextEditingController();
 
@@ -59,6 +61,11 @@ class _AnalysisTableState extends State<AnalysisTable> {
   late TrackballBehavior _trackballBehaviorAverageSound;
   late TrackballBehavior _trackballBehaviorPeakToPeakVibration;
   late TrackballBehavior _trackballBehaviorPeakToPeakSound;
+  late TrackballBehavior _trackballBehaviorVarianceSound;
+  late TrackballBehavior _trackballBehaviorVarianceVibration;
+  late TrackballBehavior _trackballBehaviorSTDDevSound;
+  late TrackballBehavior _trackballBehaviorSTDDevVibration;
+
 
   @override
   void initState() {
@@ -71,54 +78,80 @@ class _AnalysisTableState extends State<AnalysisTable> {
     _trackballBehaviorAverageSound = TrackballBehavior(enable: true);
     _trackballBehaviorPeakToPeakVibration = TrackballBehavior(enable: true);
     _trackballBehaviorPeakToPeakSound = TrackballBehavior(enable: true);
+    _trackballBehaviorVarianceSound = TrackballBehavior(enable: true);
+    _trackballBehaviorVarianceVibration = TrackballBehavior(enable: true);
+    _trackballBehaviorSTDDevSound = TrackballBehavior(enable: true);
+    _trackballBehaviorSTDDevVibration = TrackballBehavior(enable: true);
+
 
 
     _updateFactorsData(20); // Load initial data for session 0*/
   }
 
   void _updateFactorsData(int period) {
-    setState(() {
-      var analysisPeriod = 403*period; // TODO: Change 403 to data/rev
-      _factorData = widget.data;
+  setState(() {
+    var analysisPeriod = 403 * period; // TODO: Change 403 to data/rev
+    _factorData = widget.data;
 
-      var tempMaximum = tsvMax(_factorData, analysisPeriod);
-      var tempMinimum = tsvMin(_factorData, analysisPeriod);
-      var tempAverage = tsvAvg(_factorData, analysisPeriod);
-      var tempP2P = tsvP2P(tempMaximum, tempMinimum);
-      var tempTime = tempMaximum['tMax'];
+    var tempMaximum = tsvMax(_factorData, analysisPeriod);
+    var tempMinimum = tsvMin(_factorData, analysisPeriod);
+    var tempAverage = tsvAvg(_factorData, analysisPeriod);
+    var tempP2P = tsvP2P(tempMaximum, tempMinimum);
+    var tempVariance = tsvVariance(tempMaximum, tempMinimum); // New line for variance calculation
+    var tempStandardDeviation = tsvStandardDeviation(tempMaximum, tempMinimum); // New line for standard deviation calculation
+    var tempTime = tempMaximum['tMax'];
 
-      List<TSV> maximumValues = [];
-      List<TSV> minimumValues = [];
-      List<TSV> averageValues = [];
-      List<TSV> peakToPeakValues = [];
-      for(var i = 0; i < tempTime!.length; i++) {
-        maximumValues.add(TSV(
-          time: tempTime[i],
-          sound:  tempMaximum['sMax']![i],
-          vibration: tempMaximum['vMax']![i],
-        ));
-        minimumValues.add(TSV(
-          time: tempTime[i],
-          sound:  tempMinimum['sMin']![i],
-          vibration: tempMinimum['vMin']![i],
-        ));
-        averageValues.add(TSV(
-          time: tempTime[i],
-          sound:  tempAverage['sAvg']![i],
-          vibration: tempAverage['vAvg']![i],
-        ));
-        peakToPeakValues.add(TSV(
-          time: tempTime[i],
-          sound:  tempP2P['sP2P']![i],
-          vibration: tempP2P['vP2P']![i],
-        ));
-      }
-      _maximumData = maximumValues;
-      _minimumData = minimumValues;
-      _averageData = averageValues;
-      _P2PData = peakToPeakValues;
-    });
-  }
+    List<TSV> maximumValues = [];
+    List<TSV> minimumValues = [];
+    List<TSV> averageValues = [];
+    List<TSV> peakToPeakValues = [];
+    List<TSV> varianceValues = []; // New list for variance form factor values
+    List<TSV> standardDeviationValues = []; // New list for standard deviation form factor values
+
+    for (var i = 0; i < tempTime!.length; i++) {
+      maximumValues.add(TSV(
+        time: tempTime[i],
+        sound: tempMaximum['sMax']![i],
+        vibration: tempMaximum['vMax']![i],
+      ));
+      minimumValues.add(TSV(
+        time: tempTime[i],
+        sound: tempMinimum['sMin']![i],
+        vibration: tempMinimum['vMin']![i],
+      ));
+      averageValues.add(TSV(
+        time: tempTime[i],
+        sound: tempAverage['sAvg']![i],
+        vibration: tempAverage['vAvg']![i],
+      ));
+      peakToPeakValues.add(TSV(
+        time: tempTime[i],
+        sound: tempP2P['sP2P']![i],
+        vibration: tempP2P['vP2P']![i],
+      ));
+      varianceValues.add(TSV(
+        time: tempTime[i],
+        sound: tempVariance['sVariance']![i], // Assigning the sound variance form factor values
+        vibration: tempVariance['vVariance']![i], // Assigning the vibration variance form factor values
+      ));
+      standardDeviationValues.add(TSV(
+        time: tempTime[i],
+        sound: tempStandardDeviation['sStandardDeviation']![i], // Assigning the sound standard deviation form factor values
+        vibration: tempStandardDeviation['vStandardDeviation']![i], // Assigning the vibration standard deviation form factor values
+      ));
+    }
+    _maximumData = maximumValues;
+    _minimumData = minimumValues;
+    _averageData = averageValues;
+    _P2PData = peakToPeakValues;
+    _varianceData = varianceValues; // Assigning the variance form factor values
+    _standardDeviationData = standardDeviationValues; // Assigning the standard deviation form factor values
+  });
+}
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -456,7 +489,7 @@ class _AnalysisTableState extends State<AnalysisTable> {
                       width: 600,
                       height: 200,
                       child: SfCartesianChart(
-                        title: ChartTitle(text: "PeakToPeak Sound/Time" ,
+                        title: ChartTitle(text: "Variance Sound/Time" ,
                             textStyle: TextStyle(color: Colors.grey)),
                         legend: Legend(isVisible: false),
                         series: <ChartSeries>[
@@ -472,7 +505,88 @@ class _AnalysisTableState extends State<AnalysisTable> {
                         ],
                         primaryXAxis: NumericAxis(labelStyle: TextStyle(color: Colors.grey)),
                         primaryYAxis: NumericAxis(labelStyle: TextStyle(color: Colors.grey)),
-                        trackballBehavior: _trackballBehaviorPeakToPeakSound,
+                        trackballBehavior: _trackballBehaviorVarianceSound,
+                      ),
+                    ),
+                  ],
+                ),
+                Stack(
+                  children: [
+                    SizedBox(
+                      width: 600,
+                      height: 200,
+                      child: SfCartesianChart(
+                        title: ChartTitle(text: "Variance Vibration/Time" ,
+                            textStyle: TextStyle(color: Colors.grey)),
+                        legend: Legend(isVisible: false),
+                        series: <ChartSeries>[
+                          FastLineSeries<TSV, double>(
+                            color: Colors.green.shade800,
+                            dataSource: _P2PData,
+                            xValueMapper: (TSV data, _) =>
+                            data.time * 10000.0,
+                            yValueMapper: (TSV data, _) => data.vibration,
+                            name: "Vibration",
+                            animationDuration: 0,
+                          ),
+                        ],
+                        primaryXAxis: NumericAxis(labelStyle: TextStyle(color: Colors.grey)),
+                        primaryYAxis: NumericAxis(labelStyle: TextStyle(color: Colors.grey)),
+                        trackballBehavior: _trackballBehaviorVarianceVibration,
+                      ),
+                    ),
+                  ],
+                ),
+                Stack(
+                  children: [
+                    SizedBox(
+                      width: 600,
+                      height: 200,
+                      child: SfCartesianChart(
+                        title: ChartTitle(text: "STD Dev Sound/Time" ,
+                            textStyle: TextStyle(color: Colors.grey)),
+                        legend: Legend(isVisible: false),
+                        series: <ChartSeries>[
+                          FastLineSeries<TSV, double>(
+                            color: Colors.green.shade800,
+                            dataSource: _P2PData,
+                            xValueMapper: (TSV data, _) =>
+                            data.time * 10000.0,
+                            yValueMapper: (TSV data, _) => data.sound,
+                            name: "Sound",
+                            animationDuration: 0,
+                          ),
+                        ],
+                        primaryXAxis: NumericAxis(labelStyle: TextStyle(color: Colors.grey)),
+                        primaryYAxis: NumericAxis(labelStyle: TextStyle(color: Colors.grey)),
+                        trackballBehavior: _trackballBehaviorSTDDevSound,
+                      ),
+                    ),
+                  ],
+                ),
+                Stack(
+                  children: [
+                    SizedBox(
+                      width: 600,
+                      height: 200,
+                      child: SfCartesianChart(
+                        title: ChartTitle(text: "STD Dev Vibration/Time" ,
+                            textStyle: TextStyle(color: Colors.grey)),
+                        legend: Legend(isVisible: false),
+                        series: <ChartSeries>[
+                          FastLineSeries<TSV, double>(
+                            color: Colors.green.shade800,
+                            dataSource: _P2PData,
+                            xValueMapper: (TSV data, _) =>
+                            data.time * 10000.0,
+                            yValueMapper: (TSV data, _) => data.vibration,
+                            name: "Vibration",
+                            animationDuration: 0,
+                          ),
+                        ],
+                        primaryXAxis: NumericAxis(labelStyle: TextStyle(color: Colors.grey)),
+                        primaryYAxis: NumericAxis(labelStyle: TextStyle(color: Colors.grey)),
+                        trackballBehavior: _trackballBehaviorSTDDevVibration,
                       ),
                     ),
                   ],
