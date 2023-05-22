@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:fftea/fftea.dart';
 import 'session.dart';
 import 'analysis.dart';
 
@@ -25,8 +26,10 @@ class _AnalysisTableState extends State<AnalysisTable> {
   List<TSV> _P2PData = [];
   List<TSV> _varianceData = [];
   List<TSV> _standardDeviationData = []; // New list for standard deviation form factor values
+  List<TSV> _gravityCenterFrequencyData = [];
 
   final revolutionsCount = TextEditingController();
+  final fftCount = TextEditingController();
 
   final List<String> columnNames = [
     'Measurement Time',
@@ -65,6 +68,8 @@ class _AnalysisTableState extends State<AnalysisTable> {
   late TrackballBehavior _trackballBehaviorVarianceVibration;
   late TrackballBehavior _trackballBehaviorSTDDevSound;
   late TrackballBehavior _trackballBehaviorSTDDevVibration;
+  late TrackballBehavior _trackballBehaviorGravityCenterSound;
+  late TrackballBehavior _trackballBehaviorGravityCenterVibration;
 
 
   @override
@@ -82,15 +87,18 @@ class _AnalysisTableState extends State<AnalysisTable> {
     _trackballBehaviorVarianceVibration = TrackballBehavior(enable: true);
     _trackballBehaviorSTDDevSound = TrackballBehavior(enable: true);
     _trackballBehaviorSTDDevVibration = TrackballBehavior(enable: true);
+    _trackballBehaviorGravityCenterSound = TrackballBehavior(enable: true);
+    _trackballBehaviorGravityCenterVibration = TrackballBehavior(enable: true);
 
 
 
-    _updateFactorsData(20); // Load initial data for session 0*/
+    _updateFactorsData(20, 5); // Load initial data for session 0*/
   }
 
-  void _updateFactorsData(int period) {
+  void _updateFactorsData(int period, int fftCount) {
   setState(() {
     var analysisPeriod = 403 * period; // TODO: Change 403 to data/rev
+    double samplingFrequency = 25000; //TODO: Change 25000 to sampling rate
     _factorData = widget.data;
 
     var tempMaximum = tsvMax(_factorData, analysisPeriod);
@@ -99,6 +107,7 @@ class _AnalysisTableState extends State<AnalysisTable> {
     var tempP2P = tsvP2P(tempMaximum, tempMinimum);
     var tempVariance = tsvVariance(tempMaximum, tempMinimum); // New line for variance calculation
     var tempStandardDeviation = tsvStandardDeviation(tempMaximum, tempMinimum); // New line for standard deviation calculation
+    var tempGravityCenterFrequency = tsvGravityCenterFrequency(_factorData, analysisPeriod, fftCount, samplingFrequency);
     var tempTime = tempMaximum['tMax'];
 
     List<TSV> maximumValues = [];
@@ -107,6 +116,7 @@ class _AnalysisTableState extends State<AnalysisTable> {
     List<TSV> peakToPeakValues = [];
     List<TSV> varianceValues = []; // New list for variance form factor values
     List<TSV> standardDeviationValues = []; // New list for standard deviation form factor values
+    List<TSV> gravityCenterFrequencyValues = [];
 
     for (var i = 0; i < tempTime!.length; i++) {
       maximumValues.add(TSV(
@@ -139,6 +149,11 @@ class _AnalysisTableState extends State<AnalysisTable> {
         sound: tempStandardDeviation['sStandardDeviation']![i], // Assigning the sound standard deviation form factor values
         vibration: tempStandardDeviation['vStandardDeviation']![i], // Assigning the vibration standard deviation form factor values
       ));
+      gravityCenterFrequencyValues.add(TSV(
+        time: tempTime[i],
+        sound: tempGravityCenterFrequency['sGravityCenterFrequency']![i],
+        vibration: tempGravityCenterFrequency['vGravityCenterFrequency']![i],
+      ));
     }
     _maximumData = maximumValues;
     _minimumData = minimumValues;
@@ -146,6 +161,7 @@ class _AnalysisTableState extends State<AnalysisTable> {
     _P2PData = peakToPeakValues;
     _varianceData = varianceValues; // Assigning the variance form factor values
     _standardDeviationData = standardDeviationValues; // Assigning the standard deviation form factor values
+    _gravityCenterFrequencyData = gravityCenterFrequencyValues;
   });
 }
 
@@ -287,7 +303,7 @@ class _AnalysisTableState extends State<AnalysisTable> {
                         ),
                       ),
                       onPressed: () {
-                        _updateFactorsData(int.parse(revolutionsCount.text));
+                        _updateFactorsData(int.parse(revolutionsCount.text=="" ? "20" : revolutionsCount.text), int.parse(fftCount.text=="" ? "5" : fftCount.text));
                       },
                     ),
                   ],
@@ -587,6 +603,98 @@ class _AnalysisTableState extends State<AnalysisTable> {
                         primaryXAxis: NumericAxis(labelStyle: TextStyle(color: Colors.grey)),
                         primaryYAxis: NumericAxis(labelStyle: TextStyle(color: Colors.grey)),
                         trackballBehavior: _trackballBehaviorSTDDevVibration,
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child:
+                      TextFormField(
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.grey)
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.grey)
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.white)
+                          ),
+                          hintText: 'FFT: Choose X values with top magnitude',
+                          hintStyle: TextStyle(color: Colors.grey),
+                        ),
+                        style: TextStyle(color: Colors.white70),
+                        controller: fftCount,
+                        keyboardType: TextInputType.number,
+                      ),
+                    ),
+                    Padding(padding: EdgeInsets.all(10)),
+                    OutlinedButton(
+                      child: Text("Calculate FFT"),
+                      style: OutlinedButton.styleFrom(
+                        primary: Colors.white,
+                        side: const BorderSide(
+                          color: Colors.white,
+                        ),
+                      ),
+                      onPressed: () {
+                        _updateFactorsData(int.parse(revolutionsCount.text=="" ? "20" : revolutionsCount.text), int.parse(fftCount.text=="" ? "5" : fftCount.text));
+                      },
+                    ),
+                  ],
+                ),
+                Stack(
+                  children: [
+                    SizedBox(
+                      width: 600,
+                      height: 200,
+                      child: SfCartesianChart(
+                        title: ChartTitle(text: "Gravity Center Frequency Sound/Time" ,
+                            textStyle: TextStyle(color: Colors.grey)),
+                        legend: Legend(isVisible: false),
+                        series: <ChartSeries>[
+                          FastLineSeries<TSV, double>(
+                            color: Colors.green.shade800,
+                            dataSource: _gravityCenterFrequencyData,
+                            xValueMapper: (TSV data, _) =>
+                            data.time * 10000.0,
+                            yValueMapper: (TSV data, _) => data.sound,
+                            name: "Sound",
+                            animationDuration: 0,
+                          ),
+                        ],
+                        primaryXAxis: NumericAxis(labelStyle: TextStyle(color: Colors.grey)),
+                        primaryYAxis: NumericAxis(labelStyle: TextStyle(color: Colors.grey)),
+                        trackballBehavior: _trackballBehaviorGravityCenterSound,
+                      ),
+                    ),
+                  ],
+                ),
+                Stack(
+                  children: [
+                    SizedBox(
+                      width: 600,
+                      height: 200,
+                      child: SfCartesianChart(
+                        title: ChartTitle(text: "Gravity Center Frequency Vibration/Time" ,
+                            textStyle: TextStyle(color: Colors.grey)),
+                        legend: Legend(isVisible: false),
+                        series: <ChartSeries>[
+                          FastLineSeries<TSV, double>(
+                            color: Colors.green.shade800,
+                            dataSource: _gravityCenterFrequencyData,
+                            xValueMapper: (TSV data, _) =>
+                            data.time * 10000.0,
+                            yValueMapper: (TSV data, _) => data.vibration,
+                            name: "Vibration",
+                            animationDuration: 0,
+                          ),
+                        ],
+                        primaryXAxis: NumericAxis(labelStyle: TextStyle(color: Colors.grey)),
+                        primaryYAxis: NumericAxis(labelStyle: TextStyle(color: Colors.grey)),
+                        trackballBehavior: _trackballBehaviorGravityCenterVibration,
                       ),
                     ),
                   ],

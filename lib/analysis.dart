@@ -1,3 +1,7 @@
+import 'dart:typed_data';
+
+import 'package:fftea/fftea.dart';
+
 import 'session.dart';
 import 'dart:math';
 
@@ -137,6 +141,79 @@ Map<String, List<double>> tsvStandardDeviation(
   };
 }
 
+bool IsPowerOfTwo(int x)
+{
+  return (x & (x - 1)) == 0;
+}
+
+List<TopValuesFFT> fftValues(List<List<double>> list, int fftCount, double samplesPerSecond) {
+  List<TopValuesFFT> values = [];
+  for (var i = 0; i < list.length; i++) {
+
+    if (!IsPowerOfTwo(list[i].length)) { // If length is power of two, then no problem
+      int power = 1;
+      while(power < list[i].length)
+        power*=2;
+      while(list[i].length < power) {
+        list[i].add(0);
+      }
+    }
+
+    final fft = FFT(list[i].length);
+    final fftreq = fft.realFft(list[i]);
+
+    var magnitudes = fftreq.discardConjugates().magnitudes();
+    TopValuesFFT topMagnitudes = findTopValues(magnitudes, fftCount, fft, samplesPerSecond);
+
+    values.add(topMagnitudes);
+  }
+  return values;
+}
+
+
+TopValuesFFT findTopValues(List<double> values, int count, FFT fft, double samplesPerSecond) {
+  List<double> sortedValues = List.from(values); // Create a copy of the original list
+  sortedValues.sort((a, b) => b.compareTo(a)); // Sort the list in descending order
+
+  List<double> topValues = sortedValues.sublist(0, count); // Get the top 'count' values
+  List<double> frequencies = [];
+  for (int i = 0; i < count; i++) {
+    int index = values.indexOf(topValues[i]);
+    double frequency = fft.frequency(index, samplesPerSecond);
+    frequencies.add(frequency);
+  }
+
+
+  return TopValuesFFT(magnitudes: topValues, frequencies: frequencies);
+}
+
+List<double> gravityCenterFrequencyValues(List<List<double>> list, int fftCount, double samplesPerSecond) {
+  List<double> values = [];
+  List<TopValuesFFT> fftResults = fftValues(list, fftCount, samplesPerSecond);
+  for (var i = 0; i < fftResults.length; i++) {
+    double magnitudeTimesFrequencySum = 0;
+    double magnitudeSum = 0;
+    for(var j = 0; j < fftResults[i].magnitudes.length; j++) {
+      magnitudeTimesFrequencySum += fftResults[i].magnitudes[j]*fftResults[i].frequencies[j];
+      magnitudeSum += fftResults[i].magnitudes[j];
+    }
+
+    values.add(magnitudeTimesFrequencySum/magnitudeSum);
+  }
+  return values;
+}
+
+Map<String, List<double>> tsvGravityCenterFrequency(List<TSV> list, int period, int fftCount, double samplesPerSecond) {
+
+  return {
+    'tGravityCenterFrequency': gravityCenterFrequencyValues(splitIntoChunks(list
+        .map((e) => e.time).toList(), period), fftCount, samplesPerSecond),
+    'sGravityCenterFrequency': gravityCenterFrequencyValues(splitIntoChunks(list
+        .map((e) => e.sound).toList(), period), fftCount, samplesPerSecond),
+    'vGravityCenterFrequency': gravityCenterFrequencyValues(splitIntoChunks(list
+        .map((e) => e.vibration).toList(), period), fftCount, samplesPerSecond),
+  };
+}
 
 
 

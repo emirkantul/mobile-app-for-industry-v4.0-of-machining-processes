@@ -13,6 +13,13 @@ class TSV {
   TSV({required this.time, required this.sound, required this.vibration});
 }
 
+class TopValuesFFT {
+  final List<double> magnitudes;
+  final List<double> frequencies;
+
+  TopValuesFFT({required this.magnitudes, required this.frequencies});
+}
+
 class Session extends StatefulWidget {
   Map<String, List<TSV>> tsvData = {};
 
