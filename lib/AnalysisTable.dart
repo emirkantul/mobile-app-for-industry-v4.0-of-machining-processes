@@ -27,6 +27,7 @@ class _AnalysisTableState extends State<AnalysisTable> {
   List<TSV> _varianceData = [];
   List<TSV> _standardDeviationData = []; // New list for standard deviation form factor values
   List<TSV> _gravityCenterFrequencyData = [];
+  List<TSV> _meanSquareFrequencyData = [];
 
   final revolutionsCount = TextEditingController();
   final fftCount = TextEditingController();
@@ -70,6 +71,8 @@ class _AnalysisTableState extends State<AnalysisTable> {
   late TrackballBehavior _trackballBehaviorSTDDevVibration;
   late TrackballBehavior _trackballBehaviorGravityCenterSound;
   late TrackballBehavior _trackballBehaviorGravityCenterVibration;
+  late TrackballBehavior _trackballBehaviorMeanSquareSound;
+  late TrackballBehavior _trackballBehaviorMeanSquareVibration;
 
 
   @override
@@ -89,6 +92,8 @@ class _AnalysisTableState extends State<AnalysisTable> {
     _trackballBehaviorSTDDevVibration = TrackballBehavior(enable: true);
     _trackballBehaviorGravityCenterSound = TrackballBehavior(enable: true);
     _trackballBehaviorGravityCenterVibration = TrackballBehavior(enable: true);
+    _trackballBehaviorMeanSquareSound = TrackballBehavior(enable: true);
+    _trackballBehaviorMeanSquareVibration = TrackballBehavior(enable: true);
 
 
 
@@ -108,6 +113,7 @@ class _AnalysisTableState extends State<AnalysisTable> {
     var tempVariance = tsvVariance(tempMaximum, tempMinimum); // New line for variance calculation
     var tempStandardDeviation = tsvStandardDeviation(tempMaximum, tempMinimum); // New line for standard deviation calculation
     var tempGravityCenterFrequency = tsvGravityCenterFrequency(_factorData, analysisPeriod, fftCount, samplingFrequency);
+    var tempMeanSquareFrequency = tsvMeanSquareFrequency(_factorData, analysisPeriod, fftCount, samplingFrequency);
     var tempTime = tempMaximum['tMax'];
 
     List<TSV> maximumValues = [];
@@ -117,6 +123,7 @@ class _AnalysisTableState extends State<AnalysisTable> {
     List<TSV> varianceValues = []; // New list for variance form factor values
     List<TSV> standardDeviationValues = []; // New list for standard deviation form factor values
     List<TSV> gravityCenterFrequencyValues = [];
+    List<TSV> meanSquareFrequencyValues = [];
 
     for (var i = 0; i < tempTime!.length; i++) {
       maximumValues.add(TSV(
@@ -154,6 +161,11 @@ class _AnalysisTableState extends State<AnalysisTable> {
         sound: tempGravityCenterFrequency['sGravityCenterFrequency']![i],
         vibration: tempGravityCenterFrequency['vGravityCenterFrequency']![i],
       ));
+      meanSquareFrequencyValues.add(TSV(
+          time: tempTime[i],
+          sound: tempMeanSquareFrequency['sMeanSquareFrequency']![i],
+          vibration: tempMeanSquareFrequency['vMeanSquareFrequency']![i],
+      ));
     }
     _maximumData = maximumValues;
     _minimumData = minimumValues;
@@ -162,6 +174,7 @@ class _AnalysisTableState extends State<AnalysisTable> {
     _varianceData = varianceValues; // Assigning the variance form factor values
     _standardDeviationData = standardDeviationValues; // Assigning the standard deviation form factor values
     _gravityCenterFrequencyData = gravityCenterFrequencyValues;
+    _meanSquareFrequencyData = meanSquareFrequencyValues;
   });
 }
 
@@ -478,6 +491,33 @@ class _AnalysisTableState extends State<AnalysisTable> {
                       width: 600,
                       height: 200,
                       child: SfCartesianChart(
+                        title: ChartTitle(text: "PeakToPeak Sound/Time",
+                            textStyle: TextStyle(color: Colors.grey)),
+                        legend: Legend(isVisible: false),
+                        series: <ChartSeries>[
+                          FastLineSeries<TSV, double>(
+                            color: Colors.green.shade800,
+                            dataSource: _P2PData,
+                            xValueMapper: (TSV data, _) =>
+                            data.time * 10000.0,
+                            yValueMapper: (TSV data, _) => data.sound,
+                            name: "Sound",
+                            animationDuration: 0,
+                          ),
+                        ],
+                        primaryXAxis: NumericAxis(labelStyle: TextStyle(color: Colors.grey)),
+                        primaryYAxis: NumericAxis(labelStyle: TextStyle(color: Colors.grey)),
+                        trackballBehavior: _trackballBehaviorPeakToPeakSound,
+                      ),
+                    ),
+                  ],
+                ),
+                Stack(
+                  children: [
+                    SizedBox(
+                      width: 600,
+                      height: 200,
+                      child: SfCartesianChart(
                         title: ChartTitle(text: "PeakToPeak Vibration/Time",
                             textStyle: TextStyle(color: Colors.grey)),
                         legend: Legend(isVisible: false),
@@ -695,6 +735,60 @@ class _AnalysisTableState extends State<AnalysisTable> {
                         primaryXAxis: NumericAxis(labelStyle: TextStyle(color: Colors.grey)),
                         primaryYAxis: NumericAxis(labelStyle: TextStyle(color: Colors.grey)),
                         trackballBehavior: _trackballBehaviorGravityCenterVibration,
+                      ),
+                    ),
+                  ],
+                ),
+                Stack(
+                  children: [
+                    SizedBox(
+                      width: 600,
+                      height: 200,
+                      child: SfCartesianChart(
+                        title: ChartTitle(text: "Mean Square Frequency Sound/Time" ,
+                            textStyle: TextStyle(color: Colors.grey)),
+                        legend: Legend(isVisible: false),
+                        series: <ChartSeries>[
+                          FastLineSeries<TSV, double>(
+                            color: Colors.green.shade800,
+                            dataSource: _meanSquareFrequencyData,
+                            xValueMapper: (TSV data, _) =>
+                            data.time * 10000.0,
+                            yValueMapper: (TSV data, _) => data.sound,
+                            name: "Sound",
+                            animationDuration: 0,
+                          ),
+                        ],
+                        primaryXAxis: NumericAxis(labelStyle: TextStyle(color: Colors.grey)),
+                        primaryYAxis: NumericAxis(labelStyle: TextStyle(color: Colors.grey)),
+                        trackballBehavior: _trackballBehaviorMeanSquareSound,
+                      ),
+                    ),
+                  ],
+                ),
+                Stack(
+                  children: [
+                    SizedBox(
+                      width: 600,
+                      height: 200,
+                      child: SfCartesianChart(
+                        title: ChartTitle(text: "Mean Square Frequency Vibration/Time" ,
+                            textStyle: TextStyle(color: Colors.grey)),
+                        legend: Legend(isVisible: false),
+                        series: <ChartSeries>[
+                          FastLineSeries<TSV, double>(
+                            color: Colors.green.shade800,
+                            dataSource: _meanSquareFrequencyData,
+                            xValueMapper: (TSV data, _) =>
+                            data.time * 10000.0,
+                            yValueMapper: (TSV data, _) => data.vibration,
+                            name: "Vibration",
+                            animationDuration: 0,
+                          ),
+                        ],
+                        primaryXAxis: NumericAxis(labelStyle: TextStyle(color: Colors.grey)),
+                        primaryYAxis: NumericAxis(labelStyle: TextStyle(color: Colors.grey)),
+                        trackballBehavior: _trackballBehaviorMeanSquareVibration,
                       ),
                     ),
                   ],

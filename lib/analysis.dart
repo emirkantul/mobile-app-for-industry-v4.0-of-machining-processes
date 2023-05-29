@@ -215,6 +215,34 @@ Map<String, List<double>> tsvGravityCenterFrequency(List<TSV> list, int period, 
   };
 }
 
+List<double> meanSquareFrequencyValues(List<List<double>> list, int fftCount, double samplesPerSecond) {
+  List<double> values = [];
+  List<TopValuesFFT> fftResults = fftValues(list, fftCount, samplesPerSecond);
+  for (var i = 0; i < fftResults.length; i++) {
+    double magnitudeTimesFrequencySum = 0;
+    double magnitudeSum = 0;
+    for(var j = 0; j < fftResults[i].magnitudes.length; j++) {
+      magnitudeTimesFrequencySum += pow(fftResults[i].magnitudes[j], 2)*fftResults[i].frequencies[j];
+      magnitudeSum += fftResults[i].magnitudes[j];
+    }
+
+    values.add(magnitudeTimesFrequencySum/magnitudeSum);
+  }
+  return values;
+}
+
+Map<String, List<double>> tsvMeanSquareFrequency(List<TSV> list, int period, int fftCount, double samplesPerSecond) {
+
+  return {
+    'tMeanSquareFrequency': meanSquareFrequencyValues(splitIntoChunks(list
+        .map((e) => e.time).toList(), period), fftCount, samplesPerSecond),
+    'sMeanSquareFrequency': meanSquareFrequencyValues(splitIntoChunks(list
+        .map((e) => e.sound).toList(), period), fftCount, samplesPerSecond),
+    'vMeanSquareFrequency': meanSquareFrequencyValues(splitIntoChunks(list
+        .map((e) => e.vibration).toList(), period), fftCount, samplesPerSecond),
+  };
+}
+
 
 
 
